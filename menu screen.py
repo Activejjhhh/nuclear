@@ -1,23 +1,11 @@
 import pygame
 pygame.init()
-import vlc
-import time
+
 
 # Set the screen size
 screen_width = 1400
 screen_height = 800
 screen = pygame.display.set_mode((screen_width, screen_height))
-
-
-# Initialize VLC
-#instance = vlc.Instance('--no-xlib')
-#player = instance.media_player_new()
-#media = instance.media_new('C:/Users/Danie/OneDrive/Desktop/Sublime Coding/RPReplay_Final1677529967.mov')
-#player.set_media(media)
-
-# Set the window handle for VLC
-#player.set_hwnd(pygame.display.get_wm_info()['window'])
-
 
 
 # Set the font and font size
@@ -31,7 +19,7 @@ blue = (0, 0, 255)
 
 
 # Define the function to display the BSOD
-def display_bsod(screen, buttons):
+def display_bsod(screen, buttons, brand_surface, title_surface, message1_surface, message2_surface):
     # Hide the buttons
     for button in buttons:
         button.visible = False
@@ -39,6 +27,8 @@ def display_bsod(screen, buttons):
     # Hide the brand and title text
     brand_surface.set_alpha(0)
     title_surface.set_alpha(0)
+    message1_surface.set_alpha(0)
+    message2_surface.set_alpha(0)
 
     # Fill the screen with blue
     screen.fill(blue)
@@ -198,7 +188,10 @@ while running:
                 print("Configure button pressed")
             elif panic_rect.collidepoint(mouse_pos):
                 print("Panic button pressed")
-                display_bsod(screen, [login_button, configure_button, panic_button])
+                # Call display_bsod function with brand, title, and message surfaces
+                start_time, bsod_displayed = display_bsod(screen, [login_button, configure_button, panic_button], brand_surface, title_surface, message1_surface, message2_surface)
+                # Call flip to remove any remaining buttons
+                pygame.display.flip()
     # Get the mouse position
     mouse_pos = pygame.mouse.get_pos()
 
@@ -227,39 +220,26 @@ while running:
     screen.blit(message2_surface, message2_pos)
     
     # Draw the buttons
-    pygame.draw.rect(screen, login_color, login_rect)
-    pygame.draw.rect(screen, configure_color, configure_rect)
-    pygame.draw.rect(screen, panic_color, panic_rect)
+    login_rect = pygame.draw.rect(screen, login_color, (login_button.x, login_button.y, login_button.width, login_button.height))
     screen.blit(login_surface, (login_pos[0] + button_width // 2 - login_surface.get_width() // 2, login_pos[1] + button_height // 2 - login_surface.get_height() // 2))
+
+    configure_rect = pygame.draw.rect(screen, configure_color, (configure_button.x, configure_button.y, configure_button.width, configure_button.height))
     screen.blit(configure_surface, (configure_pos[0] + button_width // 2 - configure_surface.get_width() // 2, configure_pos[1] + button_height // 2 - configure_surface.get_height() // 2))
 
-    # Draw the panic button and check for hover
-    panic_rect = pygame.Rect(panic_pos[0], panic_pos[1], button_width, button_height)
-    panic_hover = panic_rect.collidepoint(pygame.mouse.get_pos())
-    if panic_hover:
-        pygame.draw.rect(screen, button_hover_color, panic_rect)
-    else:
-        pygame.draw.rect(screen, button_color, panic_rect)
+    panic_rect = pygame.draw.rect(screen, panic_color, (panic_button.x, panic_button.y, panic_button.width, panic_button.height))
     screen.blit(panic_surface, (panic_pos[0] + button_width // 2 - panic_surface.get_width() // 2, panic_pos[1] + button_height // 2 - panic_surface.get_height() // 2))
-
-    # Check for button hover and click events
-    mouse_pos = pygame.mouse.get_pos()
-    login_hover = login_rect.collidepoint(mouse_pos)
-    configure_hover = configure_rect.collidepoint(mouse_pos)
-    panic_hover = panic_rect.collidepoint(mouse_pos)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if login_hover:
-                print("Login button pressed")
-            elif configure_hover:
-                print("Configure button pressed")
-            elif panic_hover:
-                display_bsod(screen, [login_button, configure_button, panic_button])
 
     # Update the display
     pygame.display.update()
+    
+    # Clear the screen if the BSOD is displayed
+    if bsod_displayed:
+        elapsed_time = time.time() - start_time
+        if elapsed_time >= 5:
+            screen.fill(black)
+            bsod_displayed = False
 
+    # Update the display
+    pygame.display.update()
 # Quit Pygame
 pygame.quit()
