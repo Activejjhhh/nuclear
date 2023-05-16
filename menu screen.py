@@ -1,7 +1,7 @@
 import pygame
 pygame.init()
 import vlc
-
+import time
 
 # Set the screen size
 screen_width = 1400
@@ -10,13 +10,13 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 
 
 # Initialize VLC
-instance = vlc.Instance('--no-xlib')
-player = instance.media_player_new()
-media = instance.media_new('C:/Users/Danie/OneDrive/Desktop/Sublime Coding/RPReplay_Final1677529967.mov')
-player.set_media(media)
+#instance = vlc.Instance('--no-xlib')
+#player = instance.media_player_new()
+#media = instance.media_new('C:/Users/Danie/OneDrive/Desktop/Sublime Coding/RPReplay_Final1677529967.mov')
+#player.set_media(media)
 
 # Set the window handle for VLC
-player.set_hwnd(pygame.display.get_wm_info()['window'])
+#player.set_hwnd(pygame.display.get_wm_info()['window'])
 
 
 
@@ -26,6 +26,48 @@ font = pygame.font.Font(None, 60)
 # Set the colors
 white = (255, 255, 255)
 black = (0, 0, 0)
+blue = (0, 0, 255)
+
+
+
+# Define the function to display the BSOD
+def display_bsod(screen, buttons):
+    # Hide the buttons
+    for button in buttons:
+        button.visible = False
+
+    # Hide the brand and title text
+    brand_surface.set_alpha(0)
+    title_surface.set_alpha(0)
+
+    # Fill the screen with blue
+    screen.fill(blue)
+
+    # Load the BSOD image
+    bsod_image = pygame.image.load('C:/Users/Danie/Downloads/mFxX21T-blue-screen-of-death-wallpaper.jpg').convert_alpha()
+
+    # Scale the image to fit the screen
+    bsod_image = pygame.transform.scale(bsod_image, (screen_width, screen_height))
+
+    # Blit the image onto the screen
+    screen.blit(bsod_image, (0, 0))
+
+    # Play a sound effect
+    pygame.mixer.music.load('C:/Users/Danie/Downloads/blue-screen-of-death.mp3')
+    pygame.mixer.music.play()
+
+    # Start a timer for 5 seconds
+    start_time = time.time()
+
+    # Set the BSOD flag
+    bsod_displayed = True
+
+    # Return the start time and BSOD flag
+    return start_time, bsod_displayed
+
+# Set the BSOD flag to False
+bsod_displayed = False
+
 
 # Set the brand and title text
 brand_text = "jjhhh Studios Uplink Launcher"
@@ -156,8 +198,7 @@ while running:
                 print("Configure button pressed")
             elif panic_rect.collidepoint(mouse_pos):
                 print("Panic button pressed")
-                player.play()
-            player.stop()
+                display_bsod(screen, [login_button, configure_button, panic_button])
     # Get the mouse position
     mouse_pos = pygame.mouse.get_pos()
 
@@ -215,8 +256,7 @@ while running:
             elif configure_hover:
                 print("Configure button pressed")
             elif panic_hover:
-                player.play()
-
+                display_bsod(screen, [login_button, configure_button, panic_button])
 
     # Update the display
     pygame.display.update()
