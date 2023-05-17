@@ -1,11 +1,12 @@
 import pygame
 pygame.init()
-import time
+import time 
 
 # Set the screen size
 screen_width = 1400
 screen_height = 800
 screen = pygame.display.set_mode((screen_width, screen_height))
+
 
 
 # Set the font and font size
@@ -18,7 +19,7 @@ blue = (0, 0, 255)
 
 
 
-# Define the function to display the BSOD
+
 def display_bsod(screen, buttons, brand_surface, title_surface, message1_surface, message2_surface):
     # Hide the buttons
     for button in buttons:
@@ -54,6 +55,7 @@ def display_bsod(screen, buttons, brand_surface, title_surface, message1_surface
 
     # Return the start time and BSOD flag
     return start_time, bsod_displayed
+
 
 # Set the BSOD flag to False
 bsod_displayed = False
@@ -149,6 +151,8 @@ login_surface = font.render(login_text, True, white)
 configure_surface = font.render(configure_text, True, white)
 panic_surface = font.render(panic_text, True, white)
 
+
+
 # Set the button positions
 button_x = screen_width // 2 - button_width // 2
 button_y = screen_height // 2 - button_height // 2
@@ -219,16 +223,17 @@ while running:
     screen.blit(message1_surface, message1_pos)
     screen.blit(message2_surface, message2_pos)
     
-    # Draw the buttons
-    login_rect = pygame.draw.rect(screen, login_color, (login_button.x, login_button.y, login_button.width, login_button.height))
-    screen.blit(login_surface, (login_pos[0] + button_width // 2 - login_surface.get_width() // 2, login_pos[1] + button_height // 2 - login_surface.get_height() // 2))
+    if not bsod_displayed:  # Check if the BSOD is not displayed
+        # Draw the buttons
+        login_rect = pygame.draw.rect(screen, login_color, (login_button.x, login_button.y, login_button.width, login_button.height))
+        screen.blit(login_surface, (login_pos[0] + button_width // 2 - login_surface.get_width() // 2, login_pos[1] + button_height // 2 - login_surface.get_height() // 2))
 
-    configure_rect = pygame.draw.rect(screen, configure_color, (configure_button.x, configure_button.y, configure_button.width, configure_button.height))
-    screen.blit(configure_surface, (configure_pos[0] + button_width // 2 - configure_surface.get_width() // 2, configure_pos[1] + button_height // 2 - configure_surface.get_height() // 2))
+        configure_rect = pygame.draw.rect(screen, configure_color, (configure_button.x, configure_button.y, configure_button.width, configure_button.height))
+        screen.blit(configure_surface, (configure_pos[0] + button_width // 2 - configure_surface.get_width() // 2, configure_pos[1] + button_height // 2 - configure_surface.get_height() // 2))
 
-    panic_rect = pygame.draw.rect(screen, panic_color, (panic_button.x, panic_button.y, panic_button.width, panic_button.height))
-    screen.blit(panic_surface, (panic_pos[0] + button_width // 2 - panic_surface.get_width() // 2, panic_pos[1] + button_height // 2 - panic_surface.get_height() // 2))
-
+        panic_rect = pygame.draw.rect(screen, panic_color, (panic_button.x, panic_button.y, panic_button.width, panic_button.height))
+        screen.blit(panic_surface, (panic_pos[0] + button_width // 2 - panic_surface.get_width() // 2, panic_pos[1] + button_height // 2 - panic_surface.get_height() // 2))
+    
     # Update the display
     pygame.display.update()
     
@@ -239,7 +244,6 @@ while running:
             screen.fill(black)
             bsod_displayed = False
 
-    # Update the display
-    pygame.display.update()
-# Quit Pygame
+# Quit the game
 pygame.quit()
+
