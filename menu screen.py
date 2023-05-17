@@ -1,6 +1,6 @@
 import pygame
 pygame.init()
-
+import time
 
 # Set the screen size
 screen_width = 1400
