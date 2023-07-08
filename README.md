@@ -1,26 +1,32 @@
-# nuclear
+# Nuclear
 
+## Project Updates
 
+### 18/05/23
+#### Code Improvements
+- Added a custom BSOD screen.
+- Made the buttons easier to click and spaced out the text nicely.
 
-18/05/23
-## Code Improvements
-Added a custom BSOD screen. Made the buttons easier to click and the text has been spaced out nicely
-### Magic Numbers
+#### Magic Numbers
+- The code has been updated to remove magic numbers by assigning values to variables with descriptive names. For example, `(screen_width // 2 - title_surface.get_width() // 2)` and `button_width // 2 - login_surface.get_width() // 2`.
 
-The code has been updated to remove magic numbers. The values such as `(screen_width // 2 - title_surface.get_width() // 2)` and `button_width // 2 - login_surface.get_width() // 2` have been assigned to variables with descriptive names.
+#### Code Repetition
+- Refactored the code for drawing buttons into a single function, `draw_button`. This function takes the button text and position as arguments, eliminating code repetition and improving maintainability.
 
-### Code Repetition
+#### Error Handling
+- Added error handling to handle potential errors that may occur when loading or playing sound files. This ensures graceful handling of errors and prevents crashes.
 
-The code for drawing buttons has been refactored into a single function, `draw_button`, which takes the button text and position as arguments. This eliminates code repetition and improves maintainability.
+#### Code Formatting
+- Formatted the code consistently with proper indentation and whitespace for improved readability and maintainability.
 
-### Error Handling
-
-Error handling has been added to handle potential errors that may occur when loading or playing the sound file. This ensures that the application gracefully handles such errors and prevents crashes.
-
-### Code Formatting
-
-The code has been formatted consistently, using proper indentation and whitespace, to improve readability and maintain a clean code style.
+### Missile Launch System Addition
+#### 23/05/23
+- Added a missile launch system to the project.
+- Integrated the `geopy.geocoders` module's `Nominatim` functionality to find locations for the missile launch system.
+- Included warhead libraries to support different warhead configurations.
+- Implemented calculations for air density, drag, thrust, length, diameter, stage 1 mass, stage 2 mass, stage 3 mass, yield, and range.
 
 ## Credits
-16/05/23
-Added python programs Initialising and menu screen. When using them, make sure to change the file path for menu screen in initialising
+#### 16/05/23
+- Added python programs for initializing and the menu screen.
+- When using these programs, please remember to change the file path for the menu screen in the initializing script.
