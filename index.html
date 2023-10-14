@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Geodesic Path Calculator</title>
+</head>
+<body>
+    <form method="POST">
+        <input type="text" name="start-city" placeholder="Enter start city">
+        <input type="text" name="end-city" placeholder="Enter end city">
+        <input type="submit" value="Submit">
+    </form>
+    <iframe src="{{ url_for('static', filename='map.html') }}" style="border: none; width: 100%; height: 90vh; margin-top: 50px;"></iframe>
+
+
+
+</body>
+</html>
