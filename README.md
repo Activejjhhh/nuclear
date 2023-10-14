@@ -30,3 +30,11 @@
 #### 16/05/23
 - Added python programs for initializing and the menu screen.
 - When using these programs, please remember to change the file path for the menu screen in the initializing script.
+
+
+### Adding maps
+#### 14/10/23
+- Added maps using folium
+- Allows you to select a destination to launch and hit.
+- Flask web application that takes two city names as input, retrieves their coordinates using the Geopy library, and then uses Folium to create a map showing a geodesic path between those two points.
+
