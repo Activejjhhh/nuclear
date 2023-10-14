@@ -1,6 +1,7 @@
 import pygame
-import time
 import sys
+import time 
+
 # Initialize Pygame
 pygame.init()
 
@@ -9,107 +10,40 @@ screen_width = 1400
 screen_height = 800
 screen = pygame.display.set_mode((screen_width, screen_height))
 
+# Set the colors
+black = (0, 0, 0)
+green = (0, 255, 0)
+grey = (128, 128, 128) # New color
+blue = (0, 0, 255) # New color for BSOD
+
 # Set the font and font size
 font = pygame.font.Font(None, 60)
-
-# Rest of the code...
-
-# Set the colors
-white = (255, 255, 255)
-black = (0, 0, 0)
-blue = (0, 0, 255)
+status_font = pygame.font.Font(None, 40) # New font for status text
 
 # Set the button dimensions
-button_width = 200
-button_height = 50
-button_padding = 20 
-
-# Set the button colors
-button_color = (50, 50, 50)
-button_hover_color = (100, 100, 100)
-hover_color = (200, 200, 200)
+button_width = 400 # Increased button width
+button_height = 100 # Increased button height
 
 # Set the button text
-login_text = "Login"
-configure_text = "Configure"
-panic_text = "Panic"
+button_texts = ["Start", "Configure", "Panic"]
 
-# Set the text dimensions
-text_width = 500
-text_height = 100
+class Button:
+    def __init__(self, rect, visible=True):
+        self.rect = rect
+        self.visible = visible
 
-# Set the text color
-text_color = (255, 255, 255)
-
-# Set the text font and size
-text_font = pygame.font.Font(None, 30)
-
-# Set the text messages
-message1_text = "Warning: This system is for authorized users only."
-message2_text = "Unauthorized access is strictly prohibited."
-
-# Render the text messages
-message1_surface = text_font.render(message1_text, True, text_color)
-message2_surface = text_font.render(message2_text, True, text_color)
-
-
-# Set the text positions
-message1_pos = (screen_width - text_width - 20, screen_height - text_height - 80)
-message2_pos = (screen_width - text_width - 20, screen_height - text_height - 20)
-
-
-
-# Set the button surfaces
-login_surface = font.render(login_text, True, white)
-configure_surface = font.render(configure_text, True, white)
-panic_surface = font.render(panic_text, True, white)
-
-# Set the button positions
-button_x = screen_width // 2 - button_width // 2
-button_y = screen_height // 2 - button_height // 2
-launch_pos = (button_x, button_y)
-
-
-
-
-
-configure_pos = (button_x, button_y + 100)
-panic_pos = (button_x, button_y + 200)
-login_pos = (button_x - 405 , button_y  -38 )
-
-
-
-
-running = True
-
-
-# Set the button positions
-button_x = 100  # X-coordinate for the buttons
-button_y = screen_height // 2 - (button_height + button_padding)  # Starting Y-coordinate for the buttons
-
-# Create the login button
-login_button = pygame.Rect(button_x + 50, button_y, button_width, button_height)
-configure_button = pygame.Rect(button_x + 50, button_y + button_height + button_padding, button_width, button_height)
-panic_button = pygame.Rect(button_x + 50, button_y + (button_height + button_padding) * 2, button_width, button_height)
-
-
+# Create the buttons with adjusted positions and spacing
+buttons = [Button(pygame.Rect(screen_width//4 - button_width//2 - 100, screen_height//3 + i*150, button_width, button_height)) for i in range(3)]
 
 def draw_button(screen, button_rect, color, text_surface):
-    pygame.draw.rect(screen, color, button_rect)
-    screen.blit(text_surface, (button_rect.x + button_rect.width // 2 - text_surface.get_width() // 2,
-                               button_rect.y + button_rect.height // 2 - text_surface.get_height() // 2))
+    pygame.draw.rect(screen, color, button_rect.rect, 3) # Outline width set to 3
+    screen.blit(text_surface, (button_rect.rect.x + button_rect.rect.width // 2 - text_surface.get_width() // 2,
+                               button_rect.rect.y + button_rect.rect.height // 2 - text_surface.get_height() // 2))
 
-
-def display_bsod(screen, buttons, brand_surface, title_surface, message1_surface, message2_surface):
+def display_bsod(screen, buttons):
     # Hide the buttons
     for button in buttons:
-        button["visible"] = False
-
-    # Hide the brand and title text
-    brand_surface.set_alpha(0)
-    title_surface.set_alpha(0)
-    message1_surface.set_alpha(0)
-    message2_surface.set_alpha(0)
+        button.visible = False
 
     # Fill the screen with blue
     screen.fill(blue)
@@ -119,6 +53,7 @@ def display_bsod(screen, buttons, brand_surface, title_surface, message1_surface
     bsod_image = pygame.transform.smoothscale(bsod_image, (screen_width, screen_height))
     bsod_sound = pygame.mixer.Sound("C:/Users/Danie/Downloads/blue-screen-of-death.mp3")
     bsod_sound.play()
+    
     # Display the BSOD image
     screen.blit(bsod_image, (screen_width // 2 - bsod_image.get_width() // 2,
                              screen_height // 2 - bsod_image.get_height() // 2))
@@ -134,35 +69,12 @@ def display_bsod(screen, buttons, brand_surface, title_surface, message1_surface
 
     # Show the buttons
     for button in buttons:
-        button["visible"] = True
-
-    # Show the brand and title text
-    brand_surface.set_alpha(255)
-    title_surface.set_alpha(255)
-    message1_surface.set_alpha(255)
-    message2_surface.set_alpha(255)
+        button.visible = True
 
     # Wait for 5 more seconds
     time.sleep(5)
 
-    # Quit the application
-    pygame.quit()
-    sys.exit()
-
-
-# Create the buttons
-buttons = [
-    {"rect": configure_button, "color": button_color, "hover_color": button_hover_color, "text_surface": configure_surface, "visible": True},
-    {"rect": panic_button, "color": button_color, "hover_color": button_hover_color, "text_surface": panic_surface, "visible": True},
-    {"rect": login_button, "color": button_color, "hover_color": button_hover_color, "text_surface": login_surface, "visible": True},
-]
-
-
-# Create the brand and title text surfaces
-brand_text = "jjhhh Studios Uplink Launcher"
-title_text = "Launch Operations Center"
-brand_surface = font.render(brand_text, True, white)
-title_surface = font.render(title_text, True, white)
+running = True
 
 while running:
     for event in pygame.event.get():
@@ -170,35 +82,38 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = event.pos
-            if login_button.collidepoint(mouse_pos):
-                print("Login button clicked!")
-            for button in buttons:
-                if button["rect"].collidepoint(mouse_pos):
-                    if button["text_surface"] == panic_surface:
-                        display_bsod(screen, buttons, brand_surface, title_surface, message1_surface, message2_surface)
+            for i in range(len(buttons)):
+                if buttons[i].rect.collidepoint(mouse_pos) and buttons[i].visible:
+                    print(f"{button_texts[i]} button clicked!")
+                    if button_texts[i] == "Panic":
+                        display_bsod(screen, buttons)
 
     screen.fill(black)
 
-    screen.blit(brand_surface, (20, 20))
-    screen.blit(title_surface, (20, 100))
+    # Draw title
+    title_surface = font.render("NUCLEAR SIMULATOR", True, green)
+    screen.blit(title_surface, (20, 20))
 
-    screen.blit(message1_surface, message1_pos)
-    screen.blit(message2_surface, message2_pos)
+    # Draw buttons only if they are visible
+    for i in range(3):
+        if buttons[i].visible:
+            button_surface = font.render(button_texts[i], True, green)
+            draw_button(screen, buttons[i], grey if buttons[i].rect.collidepoint(pygame.mouse.get_pos()) else green , button_surface)
 
-    pygame.draw.rect(screen, button_color, login_button)
-    screen.blit(login_surface, login_pos)
+    # Draw verification status box and text only if all buttons are visible 
+    if all(button.visible for button in buttons):
+        status_box = pygame.Rect(screen_width//2 - button_width//2 , screen_height - screen_height//4 , button_width , button_height) # Made status_box smaller
+        
+        status_text_surface = status_font.render("Authentication Status:", True, green) # Used the new font for status text
+        
+        verified_text_surface = font.render("Verified", True , green)
+        
+        screen.blit(status_text_surface , (status_box.x + status_box.width//2 - status_text_surface.get_width()//2 , screen_height - status_text_surface.get_height() - verified_text_surface.get_height())) # Moved the "Authentication Status:" text to the bottom of the screen
+        
+        screen.blit(verified_text_surface , (status_box.x + status_box.width//2 - verified_text_surface.get_width()//2 , screen_height - verified_text_surface.get_height())) # Moved "Verified" underneath the "Authentication Status:" box
 
-    for button in buttons:
-        button_rect = button["rect"]
-        color = button["color"]
-        hover_color = button["hover_color"]
-        text_surface = button["text_surface"]
-
-        if button["visible"] and button_rect.collidepoint(pygame.mouse.get_pos()):
-            color = hover_color
-
-        draw_button(screen, button_rect, color, text_surface)
     pygame.display.flip()
 
 pygame.quit()
+sys.exit()
 
