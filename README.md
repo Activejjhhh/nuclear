@@ -37,4 +37,10 @@
 - Flask web application that takes two city names as input, retrieves their coordinates using the Geopy library, and then uses Folium to create a map showing a geodesic path between those two points.
 
 #### 07/11/23
-- Retired some features of thw missile launch, Starting a basic trajectory calculator 
+- Retired some features of thw missile launch, Starting a basic trajectory calculator
+
+
+#### 28/11/23
+Added rounded buttons
+Sign up screen
+Better UI
