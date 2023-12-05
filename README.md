@@ -24,7 +24,7 @@
 - Added a missile launch system to the project.
 - Integrated the `geopy.geocoders` module's `Nominatim` functionality to find locations for the missile launch system.
 - Included warhead libraries to support different warhead configurations.
-- Implemented calculations for air density, drag, thrust, length, diameter, stage 1 mass, stage 2 mass, stage 3 mass, yield, and range.
+- Implemented calculations for air density, drag, thrust, length, diameter, stage 1 mass, stage 2 mass, stage 3 mass, yield, and range. (retired)
 
 #### 16/05/23
 - Added python programs for initializing and the menu screen.
@@ -37,7 +37,12 @@
 - Flask web application that takes two city names as input, retrieves their coordinates using the Geopy library, and then uses Folium to create a map showing a geodesic path between those two points.
 
 #### 07/11/23
-- Retired some features of thw missile launch, Starting a basic trajectory calculator
+- Retired some features of thw missile launch, Starting a basic trajectory calculator with red dashed lines to show the trajectory
+
+#### 05/12/23
+- Added a nicer looking gui for the login screen.
+- Added quotes and a loading bar for the initialising screen
+- Added a configuiration button for the nuclear simulator. The volumne for the sound affects can be changed here. Added a back button as well. 
 
 
 #### 28/11/23
