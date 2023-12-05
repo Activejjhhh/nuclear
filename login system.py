@@ -16,13 +16,8 @@ lighter_grey = (192, 192, 192)
 darker_grey = (105, 105, 105)  
 red = (255, 0, 0)
 
-
 screen = pygame.display.set_mode((screen_width, screen_height))
-
-
 pygame.display.set_caption('Login/Sign Up Area')
-
-
 conn = sqlite3.connect('users.db')
 c = conn.cursor()
 
@@ -116,7 +111,7 @@ def display_message(message, error=False):
     red = (255, 0, 0)  
     font = pygame.font.Font(None, 48)
     text_surface = font.render(message, True, red if error else neon_green)
-    screen.blit(text_surface, (screen_width // 2 - text_surface.get_width() // 2, screen_height // 2 + login_button.rect.height + 120))  # Moved down
+    screen.blit(text_surface, (screen_width // 2 - text_surface.get_width() // 2, screen_height // 2 + login_button.rect.height + 120))  
     pygame.display.flip()
     pygame.time.wait(2000)
 
@@ -126,7 +121,7 @@ def signup_screen():
 
     text_boxes = [username_box, password_box]
 
-    signup_button = Button(pygame.Rect(screen_width//2 - 150, screen_height//2 + 220, 300, 50), 'Sign Up')  # Moved further down
+    signup_button = Button(pygame.Rect(screen_width//2 - 150, screen_height//2 + 220, 300, 50), 'Sign Up')  
 
     buttons = [signup_button]
 
@@ -234,6 +229,12 @@ while True:
 
     for button in buttons:
         draw_button(screen, button)
+
+    for box in text_boxes:
+        draw_text_box(screen, box)
+
+    pygame.display.flip()
+
 
     for box in text_boxes:
         draw_text_box(screen, box)
