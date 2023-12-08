@@ -234,9 +234,3 @@ while True:
         draw_text_box(screen, box)
 
     pygame.display.flip()
-
-
-    for box in text_boxes:
-        draw_text_box(screen, box)
-
-    pygame.display.flip()
