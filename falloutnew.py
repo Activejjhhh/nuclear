@@ -15,9 +15,6 @@ dets[det_index] = {}
 fallout_contours = []
 fallout_points = {}
 fallout_points[det_index] = []
-
-fallout_drag_listener = None
-marker_drag_listener = None
 fallout_debug = False
 
 fallout_current = None
