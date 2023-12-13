@@ -9,13 +9,11 @@ from retry_requests import retry
 
 det_index = 0
 
-windsock_marker = None
+
 fallout_contours = []
 fallout_points = {}
 fallout_points[det_index] = []
 
-fallout_drag_listener = None
-marker_drag_listener = None
 fallout_debug = False
 
 fallout_current = None
@@ -260,9 +258,6 @@ class Fallout:
         # fission fraction is a number less than or equal to 1 (100%) and greater than zero
 
     def SFSS_fallout(self, kt, rad_doses, fission_fraction, windspeed):
-            x_var = 0
-            y_var = 1
-            i_var = 2
             p = self.SFSS_fallout_params(kt)
 
             if not fission_fraction:
