@@ -1,3 +1,33 @@
+
+'''
+
+
+        Many of the effects equations come from:
+
+                              E. Royce Fletcher, Ray W. Albright, Robert F.D. Perret, 
+                              Mary E. Franklin, I. Gerald Bowen, and Clayton S. White, 
+                              "NUCLEAR BOMB EFFECTS COMPUTER (Including Slide-rule Design
+                              and Curve Fits for Weapons Effects)," (CEX-62.2) U.S. Atomic Energy Commission
+                              Civil Effects Test Operations, February 1953.
+
+        The cloud effects equations mostly come from:
+        
+                              Carl F. Miller, "Fallout and Radiological Countermeasures, Volume 1,"
+                              SRI Project No. IM-4021, January 1963.                
+        
+        Some of the thermal radiation, cloud effects, and airburst blast pressures come from fitting curves on figures in:
+                              
+                              Samuel Glasstone and Philip J. Dolan, THE EFFECTS OF NUCLEAR WEAPONS, 1977 edn.
+
+        No warranties or guarantees offered! 
+    
+                            
+'''
+
+
+
+
+
 from math import log
 import math 
 
@@ -7,46 +37,64 @@ class NukeEffects:
         self.ambient_pressure = 14.7
         self.error = None
         self.debug = False
-        self.eq = {}
-        self.eq['2-4'] = {'xmin': 0.0472, 'xmax': 4.82, 'args': [-0.1877932, -1.3986162, 0.3255743, -0.0267036]}
-        self.eq['2-5'] = {'xmin': 0.1, 'xmax': 200, 'args': [-0.1307982, -0.6836211, 0.1091296, -0.0167348]}
-        self.eq['2-19'] = {'xmin': 1, 'xmax': 200, 'args': [-0.0985896, -0.6788230, 0.0846268, -0.0089153]}
-        self.eq['2-25'] = {'xmin': 1, 'xmax': 200, 'args': [-0.0564384, -0.7063068, 0.0838300, -0.0057337]}
-        self.eq['2-31'] = {'xmin': 1, 'xmax': 100, 'args': [-0.0324052, -0.6430061, -0.0307184, 0.0375190]}
-        self.eq['2-37'] = {'xmin': 1, 'xmax': 50, 'args': [-0.0083104, -0.6809590, 0.0443969, 0.0032291]}
-        self.eq['2-43'] = {'xmin': 1, 'xmax': 50, 'args': [0.0158545, -0.7504681, 0.1812493, -0.0573264]}
-        self.eq['2-49'] = {'xmin': 1, 'xmax': 30, 'args': [0.0382755, -0.8763984, -0.4701227, -0.02046373]}
-        self.eq['2-55'] = {'xmin': 1, 'xmax': 20, 'args': [0.0468997, -0.7764501, 0.3312436, -0.1647522]}
-        self.eq['2-61'] = {'xmin': 1, 'xmax': 200, 'args': [0.1292768, -0.7227471, 0.0147366, 0.0135239]}
-        self.eq['2-60'] = {'xmin': 0.0508, 'xmax': 1.35, 'args': [0.1829156, -1.4114030, -0.0373825, -0.1635453]}
-        self.eq['2-6'] = {'xmin': 0.0615, 'xmax': 4.73, 'args': [-1.9790344, -2.7267144, 0.5250615, -0.1160756]}
-        self.eq['2-62'] = {'xmin': 0.154, 'xmax': 1.37, 'args': [1.2488468, -2.7368746]}
-        self.eq['2-64'] = {'xmin': 0.0932, 'xmax': 0.154, 'args': [-3.8996912, -6.0108828]}
-        self.eq['2-8'] = {'xmin': 0.0677, 'xmax': 0.740, 'args': [-0.1739890, 0.5265382, -0.0772505, 0.0654855]}
-        self.eq['2-12'] = {'xmin': 0.0570, 'xmax': 1.10, 'args': [0.6078753, 1.1039021, -0.2836934, 0.1006855]}
-        self.eq['2-16'] = {'xmin': 0.0589, 'xmax': 4.73, 'args': [1.3827823, -1.3518147, 0.1841482, 0.0361427]}
-        self.eq['2-74'] = {'xmin': 0.2568, 'xmax': 1.4, 'args': [1.7110032, -1.2000278, 0.8182584, 1.0652528]}
-        self.eq['2-76'] = {'xmin': 0.0762, 'xmax': 0.2568, 'args': [3.8320701, 5.6357427, 6.6091754, 1.5690375]}
-        self.eq['2-78'] = {'xmin': 1, 'xmax': 200, 'args': [3.2015016, -0.3263444]}
-        self.eq['2-79'] = {'xmin': 0.0512, 'xmax': 1.35, 'args': [3.1356018, 0.3833517, -0.1159125]}
-        self.eq['2-106'] = {'xmin': 0.05, 'xmax': 50, 'args': [-0.0401874, -2.0823477, -0.0511744, -0.0074958]}
-        self.eq['2-108'] = {'xmin': 0.0001, 'xmax': 100, 'args': [-0.0193419, -0.4804553, -0.0055685, 0.0002013]}
-        self.eq['2-110'] = {'xmin': 1, 'xmax': 100000, 'args': [0.3141555, 0.059904, 0.0007636, -0.0002015]}
-        self.eq['2-111'] = {'xmin': 1, 'xmax': 100000, 'args': [0.6025982, 0.0201394, 0.0139640, 0.0008559]}
+        self.eq = {} # These equations are complex to define as they are derived from empirical data gathered from nuclear tests conducted by the United States. The process involves a scaled range of ‘x’ as our input. These arguments are then passed onto one of several equations, typically a polynomial. The output ‘y’ represents the yield, which is calculated based on these inputs. 
+        self.eq['2-4'] = {'xmin': 0.0472, 'xmax': 4.82, 'args': [-0.1877932, -1.3986162, 0.3255743, -0.0267036]} #Eq. 2.4 - maximum overpressure at 0 feet; input is scaled range; output in psi
+        self.eq['2-5'] = {'xmin': 0.1, 'xmax': 200, 'args': [-0.1307982, -0.6836211, 0.1091296, -0.0167348]} #Eq. 2.5 - maximum overpressure at 0 feet; input is psi; output in scaled range
+        self.eq['2-19'] = {'xmin': 1, 'xmax': 200, 'args': [-0.0985896, -0.6788230, 0.0846268, -0.0089153]} #Eq. 2.19 - maximum overpressure at 100 feet; input is psi; output in scaled range
+        self.eq['2-25'] = {'xmin': 1, 'xmax': 200, 'args': [-0.0564384, -0.7063068, 0.0838300, -0.0057337]} #Eq. 2.25 - maximum overpressure at 200 feet; input is psi; output in scaled range
+        self.eq['2-31'] = {'xmin': 1, 'xmax': 100, 'args': [-0.0324052, -0.6430061, -0.0307184, 0.0375190]} #Eq. 2.31 - maximum overpressure at 300 feet; input is psi; output in scaled range
+        self.eq['2-37'] = {'xmin': 1, 'xmax': 50, 'args': [-0.0083104, -0.6809590, 0.0443969, 0.0032291]} #Eq. 2.37 - maximum overpressure at 400 feet; input is psi; output in scaled range
+        self.eq['2-43'] = {'xmin': 1, 'xmax': 50, 'args': [0.0158545, -0.7504681, 0.1812493, -0.0573264]} #Eq. 2.43 - maximum overpressure at 500 feet; input is psi; output in scaled range
+        self.eq['2-49'] = {'xmin': 1, 'xmax': 30, 'args': [0.0382755, -0.8763984, -0.4701227, -0.02046373]} #Eq. 2.49 - maximum overpressure at 600 feet; input is psi; output in scaled range
+        self.eq['2-55'] = {'xmin': 1, 'xmax': 20, 'args': [0.0468997, -0.7764501, 0.3312436, -0.1647522]} #Eq. 2.55 - maximum overpressure at 700 feet; input is psi; output in scaled range # anything past 700 feet has a neglible effect on humans (assuming the largest nuke was detaonted that humans havr created so this is the max)
+        self.eq['2-61'] = {'xmin': 1, 'xmax': 200, 'args': [0.1292768, -0.7227471, 0.0147366, 0.0135239]} #Eq. 2.61 - maximum overpressure at optimum blast height; input is psi; output in scaled range
+        self.eq['2-60'] = {'xmin': 0.0508, 'xmax': 1.35, 'args': [0.1829156, -1.4114030, -0.0373825, -0.1635453]} #Eq. 2.60 - maximum overpressure at optimum height of burst; input is scaled range; output in psi
+        self.eq['2-6'] = {'xmin': 0.0615, 'xmax': 4.73, 'args': [-1.9790344, -2.7267144, 0.5250615, -0.1160756]} #Eq. 2.6 - maximum dynamic pressure at 0 feet; input is scaled range; output in psi
+        self.eq['2-62'] = {'xmin': 0.154, 'xmax': 1.37, 'args': [1.2488468, -2.7368746]} #Eq. 2.62 - maximum dynamic pressure at optimum height of burst; input is scaled range; output in psi
+        self.eq['2-64'] = {'xmin': 0.0932, 'xmax': 0.154, 'args': [-3.8996912, -6.0108828]}  #Eq. 2.64 - maximum dynamic pressure at optimum height of burst; input is scaled range; output in psi
+        self.eq['2-8'] = {'xmin': 0.0677, 'xmax': 0.740, 'args': [-0.1739890, 0.5265382, -0.0772505, 0.0654855]} #Eq. 2.8 - duration of positive overpressure at 0 feet; input is scaled range; output in sec
+        self.eq['2-12'] = {'xmin': 0.0570, 'xmax': 1.10, 'args': [0.6078753, 1.1039021, -0.2836934, 0.1006855]} #Eq. 2.12 - blast wave arrival time at 0 feet; input is scaled range; output in sec
+        self.eq['2-16'] = {'xmin': 0.0589, 'xmax': 4.73, 'args': [1.3827823, -1.3518147, 0.1841482, 0.0361427]} #Eq. 2.16 - maximum wind velocity at 0 feet; input is scaled range; output in mph
+        self.eq['2-74'] = {'xmin': 0.2568, 'xmax': 1.4, 'args': [1.7110032, -1.2000278, 0.8182584, 1.0652528]} #Eq. 2.74 - maximum wind velocity at optimum burst height; input is scaled range; output in mph
+        self.eq['2-76'] = {'xmin': 0.0762, 'xmax': 0.2568, 'args': [3.8320701, 5.6357427, 6.6091754, 1.5690375]} #Eq. 2.76 - maximum wind velocity at optimum burst height; input is scaled range; output in mph
+        self.eq['2-78'] = {'xmin': 1, 'xmax': 200, 'args': [3.2015016, -0.3263444]} #Eq. 2.78 - optimum height of burst for given overpressure; input is maximum overpressure; output is scaled height
+        self.eq['2-79'] = {'xmin': 0.0512, 'xmax': 1.35, 'args': [3.1356018, 0.3833517, -0.1159125]} #optimum height of burst to maximize overpressure; input is scaled range; output is scaled height
+        self.eq['2-106'] = {'xmin': 0.05, 'xmax': 50, 'args': [-0.0401874, -2.0823477, -0.0511744, -0.0074958]} #Eq. 2.106 - thermal radiation, input is slant range, for airburst, output is Q(1/W); for surface, input is range, output is Q(1/.7W)
+        self.eq['2-108'] = {'xmin': 0.0001, 'xmax': 100, 'args': [-0.0193419, -0.4804553, -0.0055685, 0.0002013]} #Eq. 2.108 - thermal radiation, input for airburst is Q(1/W); for surface, is Q(1/.7W); output is distance/slant distance
+        self.eq['2-110'] = {'xmin': 1, 'xmax': 100000, 'args': [0.3141555, 0.059904, 0.0007636, -0.0002015]} #Eq. 2.110 - thermal radiation for 1st degree burns; input is yield, output is Q (cal/cm^2)
+        self.eq['2-111'] = {'xmin': 1, 'xmax': 100000, 'args': [0.6025982, 0.0201394, 0.0139640, 0.0008559]} #Eq. 2.111 - thermal radiation for 2nd degree burns; input is yield, output is Q (cal/cm^2)
 
+
+
+      # Following  equations derived from figure 12.65 of Glasstone and Dolan 1977 
+
+    # These are technically only bound between 1kt and 20 MT but the scaling looks fine enough 
+    #Eq. 77-12.65-1st-50 - thermal radiation for 50% probability of an unshielded population for 1st degree burns
+    #input is yield, output is Q (cal/cm^2)
 
         self.eq['77-12.65-1st-50'] = {'xmin': 1, 'xmax': 20000, 'args': [1.93566176470914,0.325315457507999,-0.113516274769641,0.0300971575115961,-0.00330445814836616,0.000129665656335876]}
+    #Eq. 77-12.65-2nd-50 - thermal radiation for 50% probability of an unshielded population for 2nd degree burns
+    #input is yield, output is Q (cal/cm^2)
         self.eq['77-12.65-2nd-50'] = {'xmin': 1, 'xmax': 20000, 'args': [4.0147058823566697E+00,3.7180525416799937E-01,-4.5026131075683193E-02,1.3549565337157871E-02,-1.6559848551158524E-03,7.0380159845451207E-05]}
+    #Eq. 77-12.65-3rd-50 - thermal radiation for 50% probability of an unshielded population for 3rd degree burns
+    #input is yield, output is Q (cal/cm^2)
         self.eq['77-12.65-3rd-50'] = {'xmin': 1, 'xmax': 20000, 'args': [5.9981617647112317E+00,5.3350791551060528E-01,-2.3435878115600033E-02,1.0395274013807305E-02,-1.4366360115630195E-03,6.3930657856814399E-05]}
+    
+    #Eq. 77-12.65-noharm-100 - thermal radiation for 100% probability of an unshielded population for no burns
+    #input is yield, output is Q (cal/cm^2)
         self.eq['77-12.65-noharm-100'] = {'xmin': 1, 'xmax': 20000, 'args': [1.14705882353066,0.124659908645308,-0.0160088216223604,0.00359441786929512,-0.000263841056172493,0.0000053050769836388]}
+    #Eq. 77-12.65-3rd-100 - thermal radiation for 100% probability of an unshielded population for 3rd degree burns
+    #input is yield, output is Q (cal/cm^2)
         self.eq['77-12.65-3rd-100'] = {'xmin': 1, 'xmax': 20000, 'args': [7.0018382352996857,.55437306382914320,.056501270479506649,-.015219252753643841,.0017062986685328282,-.000067950215125955893]}
+
+        #Eq. 2.115 - ratio of scaling factor to yield, used for 2.114; input is yield, output is scaling factor   -> starting nuclear radiation 
         self.eq['2-115'] = {'xmin': 10, 'xmax': 20000, 'args': [-2.1343121,5.6948378,-5.7707609,2.7712520,-0.6206012,0.0526380]}
 
 
-    
+    # these heights-of-bursts and ranges for various psi are pixel matches to the knee curve graphs in Glasstone and Dolan 1977
     hobs = {}  # heights
     rngs = {}  # corresponding ranges
-    hobs[10000] = [0, 10, 22, 33, 44, 54, 65, 73, 79, 88, 94, 99, 104, 108, 111, 114, 116, 117, 117, 117]
+    hobs[10000] = [0, 10, 22, 33, 44, 54, 65, 73, 79, 88, 94, 99, 104, 108, 111, 114, 116, 117, 117, 117] # for example, if we take the second value in the list, which is 10, this means that at a certain distance (let’s say it corresponds to 70 in the rngs dictionary), the weapon would need to detonate at a height of 10 units to produce a blast overpressure of 10,000 psi at that distance.
     rngs[10000] = [69, 70, 70, 71, 71, 71, 70, 68, 66, 63, 58, 53, 47, 40, 33, 26, 18, 11, 3, 0]
     hobs[5000] =  [0,10,22,35,46,57,68,78,90,99,106,113,119,125,131,135,138,141,143,144,145,146]
     rngs[5000] =  [88,88,89,90,90,90,89,88,85,81,78,74,69,63,55,48,41,34,26,17,9,0]
@@ -83,20 +131,24 @@ class NukeEffects:
 
 
 
-
+   #gets distance from scaled range if yield is known
  
     def scaled_range(self, distance, yield_):
         return distance * (1 / yield_) ** (1 / 3) * (self.ambient_pressure / 14.7) ** (1 / 3)
-
+   
+    #gets yield from scaled range if distance is known
     def distance_from_scaled_range(self, scaled_range, yield_):
         return scaled_range / ((1 / yield_) ** (1 / 3) * (self.ambient_pressure / 14.7) ** (1 / 3))
-
+   
+    
     def yield_from_scaled_range(self, scaled_range, distance):
         return 1 / ((scaled_range / distance / (self.ambient_pressure / 14.7) ** (1 / 3)) ** 3)
 
+    #scales from one yield effect to another yield with respect   to the cube root law for  explosions
     def scaled_yield(self, yield_, ref_distance, ref_yield):
         return ref_distance / ((ref_yield / yield_) ** (1 / 3))
-
+    #   //initial nuclear radiation (rem)
+    # input is distance (slant range), yield, airburst (bool); output is rem
     def initial_nuclear_radiation(self, distance, yield_, airburst):
         yieldscale = 1
         if yield_ < 1:
@@ -119,6 +171,11 @@ class NukeEffects:
                 scaling_factor) * exp(-5.415384 * (density_ratio) * distance))
         return r / yieldscale
 
+
+    #initial nuclear radiation 
+    # input is yield and rem, output is slant range
+    #only only works between 1 and 20 MT. however extrapolating this data allows us to do some more work on it. 
+
     def initial_nuclear_radiation_distance(self, yield_, rem, airburst):
         if rem >= 1 and rem <= pow(10, 8):
             a = +0.1237561
@@ -136,7 +193,7 @@ class NukeEffects:
             g = +0.0009881
             g_ = -0.0001220
             h = -0.0032363
-            h_ = +0.0000217
+            h_ = +0.0000217 # according to the creator of nuke map, h is slightly different to what is is in the original book. however using this value gives us answers which dont seem right
             i = +0.0000111
             i_ = -0.0000006
 
@@ -146,7 +203,7 @@ class NukeEffects:
             self.log10(yield_)
             self.logW = self.log10(yield_)
 
-            #
+            # equation 2.116
             distance = a + (b + a_ * logI + d_ * logI2 + g_ * logI3) * self.logW
             distance += (c + b_ * logI + e_ * logI2 + h_ * logI3) * pow(self.logW, 3)
             distance += (d + (c_ * logI) + (f_ * logI2) + (i_ * logI3)) * pow(self.logW, 5)
@@ -160,7 +217,7 @@ class NukeEffects:
                 print(self.error)
 
             return False
-
+    #max fire ball radius, input yield, type of blast and it outputs miles. 100% needed
     def fireball_radius(self, yield_, hob_ft):
         if yield_ is None:
             self.error = "MISSING INPUT PARAMETER"
@@ -169,8 +226,8 @@ class NukeEffects:
 
             return None
 
-        contact_burst = 145 * pow(yield_, 0.4) * 4
-        air_burst = 110 * pow(yield_, 0.4) * 4
+        contact_burst = 145 * pow(yield_, 0.4) * 2
+        air_burst = 110 * pow(yield_, 0.4) * 2   #these equations are the equations of break away fireballs so we must times it by 4 to get the actual max size. glasstone and golan has this as a rough approximation
 
         self.contact_burst_hob = 5 * pow(yield_, 0.3)
         self.air_burst_hob = 180 * pow(yield_, .4)
@@ -192,14 +249,7 @@ class NukeEffects:
         else:
             return .04356 * pow(self.yield_, .4)
 
-    def minimum_height_for_negligible_fallout(self, yield_):
-        if yield_ is None:
-            self.error = "MISSING INPUT PARAMETER"
-            if self.debug:
-                print(self.error)
-            return None
-        return .03409 * pow(yield_, .4)
-
+    #crater functions, depending on soil or rock etc input is yield. /output is an array of lip radius (mi), apparent radius (mi), and depth (mi)
     def crater(self, yield_, soil):
         if yield_ is None:
             self.error = "MISSING INPUT PARAMETER"
@@ -216,7 +266,9 @@ class NukeEffects:
             c.append(.009591 * pow(yield_, 1 / 3))
             c.append(.004591 * pow(yield_, 1 / 3))
         return c
+  
 
+     #input is distance (mi), yield, airburst flag; output is cal/cm^2
     def thermal_radiation_q(self, distance, yield_, airburst):
         y = self.eq_result('2-106', distance)
         if yield_ < 1:
@@ -424,264 +476,6 @@ class NukeEffects:
                       rngs_sm[psi].append(self.rngs[psi][k])
                       rv = self.hobs[psi][k]
           return hobs_sm, rngs_sm
-
-
-    def max_height_for_psi(self, kt, psi):
-         if psi in hobs:
-             return hobs[psi][-1]
-         else:
-             psi_ = psi_find(psi)
-             return self.lerp(self.max_height_for_psi(kt, psi_[0]), psi_[0], self.max_height_for_psi(kt, psi_[1]), psi_[1], psi)
-
-    def range_from_psi_hob_1kt(self, psi, hob):
-         if hob < 0 or psi > 10000 or psi < 1:
-             return False
-         if psi in hobs:
-             if hob > hobs[psi][-1]:
-                 return 0
-             near_hobs = array_closest(hobs_sm[psi], hob)
-             if len(near_hobs) == 1:
-                 return rngs_sm[psi][near_hobs[0]]
-             else:
-                 min_hob_k = near_hobs[0]
-                 max_hob_k = near_hobs[1]
-             return self.lerp(rngs_sm[psi][min_hob_k], hobs_sm[psi][min_hob_k], rngs_sm[psi][max_hob_k], hobs_sm[psi][max_hob_k], hob)
-         else:
-             return range_from_psi_hob_1kt_interpolated(psi, hob)
-
-    def range_from_psi_hob_1kt_interpolated(self, psi, hob):
-         h = hob
-         psi_ = psi_find(psi)
-         p1 = psi_[0]
-         p2 = psi_[1]
-         if h <= 0:
-             result = self.lerp(rngs[p1][0], p1, rngs[p2][0], p2, psi)
-             return result
-         max_hob_outer = hobs[p1][-1]
-         max_hob_inner = hobs[p2][-1]
-         max_hob_lerp = self.lerp(max_hob_outer, p1, max_hob_inner, p2, psi)
-         if h > max_hob_lerp:
-             return 0
-         proportion = self.lerp(0, p2, 1, p1, psi)
-         near_hobs = array_closest(hobs[p1], h)
-         outer_index = near_hobs[0]
-         search_direction = 1
-         intercept = getInterpolatedPosition(p2, p1, outer_index)
-         if not intercept:
-             return False
-         h_low_index = None
-         h_low_prop = None
-         r_low_prop = None
-         h_high_index = None
-         h_high_prop = None
-         r_high_prop = None
-         while intercept[1] < h:
-             rng_at_prop = self.lerp(rngs[p1][outer_index], 1, intercept[0], 0, proportion)
-             hob_at_prop = self.lerp(hobs[p1][outer_index], 1, intercept[1], 0, proportion)
-             if hob_at_prop < h:
-                 if outer_index > h_low_index or h_low_index is None:
-                     h_low_index = outer_index
-                     h_low_prop = hob_at_prop
-                     r_low_prop = rng_at_prop
-             if hob_at_prop > h:
-                 if h_low_index:
-                     h_high_prop = hob_at_prop
-                     r_high_prop = rng_at_prop
-                     result = self.lerp(r_low_prop, h_low_prop, r_high_prop, h_high_prop, h)
-                     return result
-                     break
-             outer_index += search_direction
-
-    def range_from_psi_hob_1kt_interpolated(self, psi, hob):
-        h = hob
-        psi_ = self.psi_find(psi)
-        p1 = psi_[0]
-        p2 = psi_[1]
-        if h <= 0:
-            result = self.lerp(rngs[p1][0], p1, rngs[p2][0], p2, psi)
-            return result
-        max_hob_outer = hobs[p1][-1]
-        max_hob_inner = hobs[p2][-1]
-        max_hob_lerp = self.lerp(max_hob_outer, p1, max_hob_inner, p2, psi)
-        if h > max_hob_lerp:
-            return 0
-        proportion = self.lerp(0, p2, 1, p1, psi)
-        near_hobs = self.array_closest(hobs[p1], h)
-        outer_index = near_hobs[0]
-        search_direction = 1
-        intercept = self.getInterpolatedPosition(p2, p1, outer_index)
-        if not intercept:
-            return False
-        while intercept[1] < h:
-            rng_at_prop = self.lerp(rngs[p1][outer_index], 1, intercept[0], 0, proportion)
-            hob_at_prop = self.lerp(hobs[p1][outer_index], 1, intercept[1], 0, proportion)
-            if hob_at_prop < h:
-                if outer_index > h_low_index or h_low_index is None:
-                    h_low_index = outer_index
-                    h_low_prop = hob_at_prop
-                    r_low_prop = rng_at_prop
-            if hob_at_prop > h:
-                if h_low_index:
-                    h_high_prop = hob_at_prop
-                    r_high_prop = rng_at_prop
-                    result = self.lerp(r_low_prop, h_low_prop, r_high_prop, h_high_prop, h)
-                    return result
-                    break
-            outer_index += search_direction
-            if outer_index >= len(hobs[p1]) or outer_index < 0:
-                return False
-            else:
-                intercept = self.getInterpolatedPosition(p2, p1, outer_index)
-                if not intercept:
-                    return False
-        if not result and h_low_index:
-            rng_at_prop = self.lerp(rngs[p1][outer_index], 1, intercept[0], 0, proportion)
-            hob_at_prop = self.lerp(hobs[p1][outer_index], 1, intercept[1], 0, proportion)
-            h_high_prop = hob_at_prop
-            r_high_prop = rng_at_prop
-            result = self.lerp(r_low_prop, h_low_prop, r_high_prop, h_high_prop, h)
-            return result
-        else:
-            rng_at_prop = self.lerp(rngs[p1][outer_index], 1, intercept[0], 0, proportion)
-            hob_at_prop = self.lerp(hobs[p1][outer_index], 1, intercept[1], 0, proportion)
-            h_high_prop = hob_at_prop
-            r_high_prop = rng_at_prop
-            intercept = self.getInterpolatedPosition(p2, p1, outer_index - 1)
-            if not intercept:
-                return False
-            rng_at_prop = self.lerp(rngs[p1][outer_index - 1], 1, intercept[0], 0, proportion)
-            hob_at_prop = self.lerp(hobs[p1][outer_index - 1], 1, intercept[1], 0, proportion)
-            h_low_prop = hob_at_prop
-            r_low_prop = rng_at_prop
-            result = self.lerp(r_low_prop, h_low_prop, r_high_prop, h_high_prop, h)
-            return result
-        return False
-
-    def getInterpolatedPosition(self, inner_psi, outer_psi, outer_index):
-        inner_index = 0
-        while not self.linesIntersect(
-                0, 0,
-                rngs[outer_psi][outer_index], hobs[outer_psi][outer_index],
-                rngs[inner_psi][inner_index], hobs[inner_psi][inner_index],
-                rngs[inner_psi][inner_index + 1], hobs[inner_psi][inner_index + 1]
-        ):
-            inner_index += 1
-            if inner_index > len(rngs[inner_psi]) or inner_index - 1 < 0:
-                return False
-        return self.getLineLineIntersection(0, 0, rngs[outer_psi][outer_index], hobs[outer_psi][outer_index],
-                                             rngs[inner_psi][inner_index + 1], hobs[inner_psi][inner_index + 1],
-                                             rngs[inner_psi][inner_index], hobs[inner_psi][inner_index])
-
-    def getLineLineIntersection(self, x1, y1, x2, y2, x3, y3, x4, y4):
-        det1And2 = self.getLineLineIntersection_det(x1, y1, x2, y2)
-        det3And4 = self.getLineLineIntersection_det(x3, y3, x4, y4)
-        x1LessX2 = x1 - x2
-        y1LessY2 = y1 - y2
-        x3LessX4 = x3 - x4
-        y3LessY4 = y3 - y4
-        det1Less2And3Less4 = self.getLineLineIntersection_det(x1LessX2, y1LessY2, x3LessX4, y3LessY4)
-        if det1Less2And3Less4 == 0:
-            return False
-        x = (self.getLineLineIntersection_det(det1And2, x1LessX2, det3And4, x3LessX4) / det1Less2And3Less4)
-        y = (self.getLineLineIntersection_det(det1And2, y1LessY2, det3And4, y3LessY4) / det1Less2And3Less4)
-        return [x, y]
-
-    def getLineLineIntersection_det(self, a, b, c, d):
-        return a * d - b * c
-    def linesIntersect(self, x1, y1, x2, y2, x3, y3, x4, y4):
-        if x1 == x2 and y1 == y2 or x3 == x4 and y3 == y4:
-            return False
-        ax = x2 - x1
-        ay = y2 - y1
-        bx = x3 - x4
-        by = y3 - y4
-        cx = x1 - x3
-        cy = y1 - y3
-
-        alphaNumerator = by * cx - bx * cy
-        commonDenominator = ay * bx - ax * by
-        if commonDenominator > 0:
-            if alphaNumerator < 0 or alphaNumerator > commonDenominator:
-                return False
-        elif commonDenominator < 0:
-            if alphaNumerator > 0 or alphaNumerator < commonDenominator:
-                return False
-        betaNumerator = ax * cy - ay * cx
-        if commonDenominator > 0:
-            if betaNumerator < 0 or betaNumerator > commonDenominator:
-                return False
-        elif commonDenominator < 0:
-            if betaNumerator > 0 or betaNumerator < commonDenominator:
-                return False
-        if commonDenominator == 0:
-            y3LessY1 = y3 - y1
-            collinearityTestForP3 = x1 * (y2 - y3) + x2 * (y3LessY1) + x3 * (y1 - y2)
-            if collinearityTestForP3 == 0:
-                if x1 >= x3 and x1 <= x4 or x1 <= x3 and x1 >= x4 or x2 >= x3 and x2 <= x4 or x2 <= x3 and x2 >= x4 or x3 >= x1 and x3 <= x2 or x3 <= x1 and x3 >= x2:
-                    if y1 >= y3 and y1 <= y4 or y1 <= y3 and y1 >= y4 or y2 >= y3 and y2 <= y4 or y2 <= y3 and y2 >= y4 or y3 >= y1 and y3 <= y2 or y3 <= y1 and y3 >= y2:
-                        return True
-            return False
-        return True
-
-    def array_max_value(self, array):
-        return max(array)
-
-    def array_keys(self, myObject, searchVal=None):
-        output = []
-        for key in myObject:
-            if searchVal is not None:
-                if myObject[key] == searchVal:
-                    output.append(key)
-            else:
-                output.append(key)
-        return output
-
-    def array_closest(self, arr, val):
-        lo = None
-        hi = None
-        for i in arr:
-            if arr[i] == val:
-                return [i]
-            if arr[i] <= val and (lo is None or lo < arr[i]):
-                lo = arr[i]
-                lo_k = i
-            if arr[i] >= val and (hi is None or hi > arr[i]):
-                hi = arr[i]
-                hi_k = i
-        if hi_k != lo_k + 1:
-            lo_k = hi_k - 1
-        return [lo_k, hi_k]
-
-
-
-    def psi_find(self, psi):
-        min_psi = None
-        max_psi = None
-        for p in psi_index:
-            if int(psi_index[p]) < psi:
-                min_psi = psi_index[p]
-            if int(psi_index[p]) > psi:
-                if not max_psi:
-                    max_psi = psi_index[p]
-        return [min_psi, max_psi]
-
-    def max_height_for_psi(self, kt, psi):
-        if psi in hobs:
-            max_hob = self.array_max_value(hobs[psi])
-            return max_hob * pow(kt, 1 / 3)
-        else:
-            psi_ = self.psi_find(psi)
-            max_hob_outer = hobs[psi_[0]][-1]
-            max_hob_inner = hobs[psi_[1]][-1]
-            return self.lerp(max_hob_outer, psi_[0], max_hob_inner, psi_[1], psi) * pow(kt, 1 / 3)
-
-    def opt_height_for_psi(self, kt, psi):
-        if psi in hobs:
-            maxs = self.array_keys(rngs[psi], self.array_max_value(rngs[psi]))
-            return hobs[psi][maxs[0]] * pow(kt, 1 / 3)
-        else:
-            psi_ = self.psi_find(psi)
-            return self.lerp(self.opt_height_for_psi(kt, psi_[0]), psi_[0], self.opt_height_for_psi(kt, psi_[1]), psi_[1], psi)
 
     def psi_at_distance_hob(self, dist_ft, kt, hob):
         min_psi = None
@@ -891,11 +685,6 @@ class NukeEffects:
            else:
                return ((y2 - y3) * x1 + (y3 - y1) * x2) / (y2 - y1)
 
-    def inArray(needle, haystack):
-        return needle in haystack
-
-
-
 
     def set_debug(self, status):
         self.debug = status
@@ -962,5 +751,6 @@ cloud_head_height = bc.cloud_final_vertical_semiaxis(yield_)
 print("Mushroom cloud altitude: " + str(cloud_altitude) + " units.")
 print("Mushroom cloud head radius: " + str(cloud_head_radius) + " units.")
 print("Mushroom cloud head height: " + str(cloud_head_height) + " units.")
+
 
 
