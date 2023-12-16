@@ -24,7 +24,7 @@ jjhhh_surface = jjhhh_font.render("jjhhh studios", True, (255, 255, 255))
 
 jjhhh_x = 10
 jjhhh_y = 10
-s
+
 start_time = pygame.time.get_ticks()
 dot_interval = 500
 
