@@ -7,7 +7,7 @@ import pandas as pd
 from retry_requests import retry
 import matplotlib.pyplot as plt
 import numpy as np
-
+from scipy.interpolate import interp1d
 
 dets = {}  
 det_index = 0  
@@ -183,23 +183,42 @@ class Fallout:
             # rotates an array of points to a certain angle
             # note that this now returns a new array. previously it was
             # modifying the underlying points_array which was creating problems.
-    def rotate_points(self, points_array, angle_degrees):
-        print(f"rotate_points input: {points_array}, {angle_degrees}")
+
+    def rotate_points(self, points_array, angle_degrees, parameters):
         rotated = []
+        points_dict = {}  # Dictionary to store points and their parameters
+
         # normalize angle for wind
         angle_degrees = (90 - angle_degrees) + 180
         # rotate
         angle_rad = (angle_degrees) * deg2rad
         sinA = math.sin(angle_rad)
         cosA = math.cos(angle_rad)
+
         for i in range(len(points_array)):
             px = points_array[i][0]
             py = points_array[i][1]
             rotated_point = [px * cosA - py * sinA, px * sinA + py * cosA]
             rotated.append(rotated_point)
-            print(f"Rotated point {i}: {rotated_point}")
-        print(f"rotate_points output: {rotated}")
+
+            # Determine the associated parameter
+            if px <= parameters['downwind_stem_distance']:
+                parameter = "Maximum downwind fallout (stem only) distance"
+            elif px <= parameters['downwind_cloud_distance']:
+                parameter = "Maximum downwind fallout distance (including cloud)"
+            else:
+                parameter = "Unknown"
+
+            # Store the point and its parameter in the dictionary
+            points_dict[str(rotated_point)] = parameter
+
+        # Print each unique point and its parameter
+        for point, parameter in points_dict.items():
+            print(f"Rotated point: {point}, Associated parameter: {parameter}")
+
         return rotated
+
+
 
     
 
@@ -453,7 +472,6 @@ class Fallout:
 
                     if d['draw_stem']:
                         try:
-                            print(f"downwind_stem_distance before adding to d: {downwind_stem_distance}")
                             d['downwind_cloud_distance'] = downwind_cloud_distance
                             d['max_cloud_width'] = max_cloud_width
                             d['cloud_widen_point'] = cloud_widen_point
@@ -516,6 +534,8 @@ class Fallout:
     def SFSS_fallout_points(self, f, angle, steps):
         stem_points = []
         cloud_points = []
+        stem_counter = 0
+        cloud_counter = 0
         
         p = []
 
@@ -529,7 +549,9 @@ class Fallout:
 
         if f['draw_stem']:
             self.draw_arc(p, f['upwind_stem_distance'], 0, f['x_center'], stem_circle_radius, steps / 2)
+            stem_counter += steps / 2
             self.draw_arc(p, f['x_center'], stem_circle_radius, stem_inner_x, f['max_stem_width'], steps / 2)
+            stem_counter += steps / 2
 
             print(f"p after draw_stem: {p}")
 
@@ -551,7 +573,9 @@ class Fallout:
 
         if f['draw_cloud']:
             self.draw_arc(p, f['cloud_widen_point'] + f['x_center'], f['max_cloud_width'], f['downwind_cloud_distance'] - f['x_center'] * 2, 0, steps)
+            cloud_counter += steps
             self.draw_arc(p, f['downwind_cloud_distance'] - f['x_center'] * 2, 0, f['cloud_widen_point'] + f['x_center'], -f['max_cloud_width'], steps)
+
         if f['draw_stem']:
             if ((f['upwind_cloud_distance'] + f['x_center']) < f['downwind_stem_distance']) and f['draw_cloud']:
                 pp = []
@@ -570,16 +594,42 @@ class Fallout:
                 self.draw_arc(p, f['cloud_widen_point'] + f['x_center'], -f['max_cloud_width'], f['upwind_cloud_distance'] + f['x_center'] + 0 + steps)
 
 
-        print(f"p before final check: {p}")
+        unique_points = list(set(tuple(point) for point in p))
 
-        if p is None:
+        # Specify the order in which you want to connect the points
+        order = [1, 5, 4, 10, 2, 9, 11, 6, 3, 5, 1]
+
+        # Create a new list of points in the specified order
+        ordered_points = [unique_points[i-1] for i in order]  # Subtract 1 because Python indices start at 0
+
+        # Print the number of unique stem and cloud points
+        print(f"Number of unique stem points: {len([point for point in ordered_points if point[0] <= f['downwind_stem_distance']])}")
+        print(f"Number of unique cloud points: {len([point for point in ordered_points if point[0] <= f['downwind_cloud_distance']])}")
+
+        for point in ordered_points:
+            x, y = point
+            print(f"Unique x: {x}, y: {y}")
+
+            # Determine the associated parameter
+            if f['draw_stem'] and x <= f['downwind_stem_distance']:
+                parameter = "Maximum downwind fallout (stem only) distance"
+            elif f['draw_cloud'] and x <= f['downwind_cloud_distance']:
+                parameter = "Maximum downwind fallout distance (including cloud)"
+            elif x <= f['upwind_stem_distance']:
+                parameter = "Upwind stem distance"
+            elif abs(y) <= f['max_stem_width']:
+                parameter = "Stem width"
+            else:
+                parameter = "Unknown"
+
+            print(f"Coordinate: ({x}, {y}), Associated parameter: {parameter}")
+
+        if not ordered_points:
             return []
-        p = self.rotate_points(p, angle)
 
-        print(f"Final p: {p}")
+        rotated_ordered_points = self.rotate_points(ordered_points, angle, f)
 
-        return p
-
+        return rotated_ordered_points
 
                    
    
@@ -650,14 +700,14 @@ class Fallout:
                 print("Error: fallout_current['rad_doses'] is None")
 
             # Render the points at 0 angle first -- for whatever reason that seems to need to be -90
-       #     points = self.SFSS_fallout_points(ss, -90, steps)
+           # points = self.SFSS_fallout_points(ss, -90, steps)
 
             
             # Save them
            # fallout_points[det_index].append(points)
             
             # Then rotate them
-            #plot_fallout(pos, rotate_points(points, fallout_current['angle']), f_color, str(fallout_current['rad_doses'][i]) + " r/hr")
+           # plot_fallout(pos, rotate_points(points, fallout_current['angle']), f_color, str(fallout_current['rad_doses'][i]) + " r/hr")
 
 
 
@@ -882,14 +932,23 @@ points = fo.SFSS_fallout_points(f, angle, steps)
 # Unzip the list of points into X and Y coordinates
 x_coords, y_coords = zip(*points)
 
-# Create a scatter plot
-plt.scatter(x_coords, y_coords)
+# Convert y_coords to a numpy array for easier manipulation
+y_coords_np = np.array(y_coords)
+
+# Create a line plot to join the points
+plt.plot(x_coords, y_coords, color='blue')
+
+# Create a scatter plot, with color determined by y-coordinate
+plt.scatter(x_coords, y_coords, c=y_coords_np, cmap='viridis')
+
+# Add a colorbar to the plot to show how the colors correspond to y-values
+plt.colorbar(label='y-coordinate')
 
 # Show the plot
 plt.show()
-# Show the plot
 
-rad_doses = [ 1, 10, 100, 1000]
+
+rad_doses = [ 1 ]
 
 sfss = fo.SFSS_fallout(kt, rad_doses, fission_fraction, wind_speed)
 for rad, params in zip(rad_doses, sfss):
@@ -905,55 +964,6 @@ for rad, params in zip(rad_doses, sfss):
     print(f" 4 Maximum downwind fallout distance (including cloud): {params['downwind_cloud_distance']*1.60934} km")
     print(f" 5 Maximum width (including cloud): {params['max_cloud_width']*1.60934} km")
     print(f" 6 Approximate area affected (including cloud): {(params['stem_area'] + params['cloud_area'])*2.58999} km²")
-
-
-
-
-
-
-
-
-'''
-
-
-
-
-
-
-
-
-                    # creates the fallout polygon from points and adds it to the map
-    def plot_fallout(gz, points, color, legend):
-                        R = 6371  # Earth's mean radius in km
-                        coords = []
-                        if color[0] != "#":
-                            color = "#" + color
-
-                        gzlat = latval(gz)
-                        gzlng = lngval(gz)
-
-                        coords = points_to_ll(gzlat, gzlng, points)
-                        coords = [{'lat': p[0], 'lon': p[1]} for p in coords]
-
-                        if not fallout_contours[det_index]:
-                            fallout_contours[det_index] = []
-                        if fallout_contours[det_index]:
-                            zoff = len(fallout_contours[det_index]) + 1
-                        else:
-                            zoff = 1
-                        poly = MAPUI.polygon({
-                            'latLons': coords,
-                            'stroke': False,
-                            'fillColor': color,
-                            'fillOpacity': 0.25,
-                            'map': map,
-                            'visible': True,
-                            'underLayer': "falloutLayer",
-                            'zindex': -10 * (-det_index + 1) + zoff,
-                        })
-                        fallout_contours[det_index].append(poly)
-
-'''
 
 
 
