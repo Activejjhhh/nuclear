@@ -1,17 +1,172 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Geodesic Path Calculator</title>
+    <title>Nuclear Simulator</title>
+    <link rel="icon" href="https://cdn.discordapp.com/attachments/941034699772538940/1162797304168861887/IMG_5840.png?ex=653d3e61&is=652ac961&hm=b18f7c9d2622865c9a1c021ab619b5da05797319ea46cfe5b7036db324b3925d&">
+    <style>
+        #city-form {
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        #city-form .row { /* Add CSS for a row */
+            display: flex;
+            flex-direction: row;
+        }
+        #city-form input[type="submit"] {
+            position: fixed;
+            right: 0;
+            top: 0;
+            border-radius: 50%;
+            background-color: red;
+            color: black;
+            border: none;
+            padding: 20px 24px;
+            font-size: 16px;
+            top: 0px;
+        }
+        #speed-display { /* Add CSS for the new speed display */
+            margin-left: 10px;
+            font-size: 16px;
+        }
+    </style>
+
+
+    <script type="text/javascript">
+        // Start the simulation time at the current time
+        var coordinates = {{ coordinates | tojson }};
+        var counter1 = 0;  // Initialize the counter
+
+        function updateSpeedDisplay() {
+            // Find the data entry for the current step
+            var currentData = coordinates[counter1];  // Use counter1 instead of time
+
+            if (currentData) {
+                console.log("Found matching data entry: ", currentData);  // Log the matching data entry
+
+                // Update the speed and time display
+                document.getElementById('speed').textContent = "Speed: " + currentData.speed.toFixed(2) + " m/s, Time:  " + currentData.time;
+                console.log("Counter1 is: ", counter1);  // Log the value of counter1
+            } else {
+                console.log("No matching data entry found");  // Log a message if no matching data entry was found
+            }
+
+            // Increment counter1 for the next iteration
+            counter1++;
+        }
+
+        // Update the speed display every second
+        setInterval(updateSpeedDisplay, 1000);
+    </script>
+
+
+
+
 </head>
-<body>
-    <form method="POST">
-        <input type="text" name="start-city" placeholder="Enter start city">
-        <input type="text" name="end-city" placeholder="Enter end city">
-        <input type="submit" value="Submit">
+<body style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 100vh;">
+    <div style="position: relative; top: 0; left: 0; right: 0; text-align: center; z-index: 999;">
+        <form method="POST" style="display: inline-block; margin: 10px auto;">
+            <label for="new-payload">Yield:</label>
+            <input type="text" id="new-payload" name="new-payload" value="{{ selected_missile.payload }}">
+            <input type="submit" value="Launch">
+        </form>
+    </div>
+
+
+    <form id="city-form" method="POST" style="margin-top: auto;">
+        <div class="row">
+            <input type="text" name="start-city" placeholder="Enter start city">
+            <label for="speed">Speed:</label>
+            <p id="speed-display"><span id="speed"></span> m/s</p>
+        </div>
+
+        <div class="row">
+            <input type="text" name="end-city" placeholder="Enter end city">
+            <select name="missile" id="missile">
+                <option value="" disabled selected>(select your missile)</option>
+                <option value="1">Minute man missile</option>
+                <option value="2">Russian missile</option>
+                <option value="3">Tsar Bomba</option>
+                <!-- Add more options as needed -->
+            </select>
+        </div>
+
+
+
+        <div style="width:200px; max-height:100vh; background-color:#f5f5f5; padding:20px; position:fixed; right:0; overflow:auto;">
+            <h3>Settings:</h3>
+            <input type="checkbox" id="airburst" name="airburst">
+            <label for="airburst">airburst</label><br>
+
+
+
+            <h3>Show overpressure rings for:</h3>
+            <input type="checkbox" id="3000psi" name="3000psi">
+            <label for="3000psi">3,000 psi (destroys missile bunkers)</label><br>
+            <input type="checkbox" id="200psi" name="200psi">
+            <label for="200psi">200 psi (extreme damage)</label><br>
+            <input type="checkbox" id="20psi" name="20psi">
+            <label for="20psi">20 psi (heavy damage)</label><br>
+            <input type="checkbox" id="5psi" name="5psi">
+            <label for="5psi">5 psi (medium damage)</label><br>
+            <input type="checkbox" id="1psi" name="1psi">
+            <label for="1psi">1 psi (light damage)</label><br>
+
+            <h3>Show ionizing radiation rings for:</h3>
+            <input type="checkbox" id="100rem" name="100rem">
+            <label for="100rem">100 rem (sickness, increased lifetime cancer risk)</label><br>
+            <input type="checkbox" id="500rem" name="500rem">
+            <label for="500rem">500 rem (50-90% mortality without medical care)</label><br>
+            <input type="checkbox" id="600rem" name="600rem">
+            <label for="600rem">600 rem (80% mortality with medical care)</label><br>
+            <input type="checkbox" id="1000rem" name="1000rem">
+            <label for="1000rem">1,000 rem (95% mortality with medical care)</label><br>
+            <input type="checkbox" id="5000rem" name="5000rem">
+            <label for="5000rem">5,000 rem (100% mortality)</label><br>
+
+            <h3>Show thermal radiation rings for:</h3>
+            <input type="checkbox" id="thirdDegreeBurns100" name="thirdDegreeBurns100">
+            <label for="thirdDegreeBurns100">Third degree burns (100% probability)</label><br>
+            <input type="checkbox" id="thirdDegreeBurns50" name="thirdDegreeBurns50">
+            <label for="thirdDegreeBurns50">Third degree burns (50% probability)</label><br>
+            <input type="checkbox" id="secondDegreeBurns50" name="secondDegreeBurns50">
+            <label for="secondDegreeBurns50">Second degree burns (50% probability)</label><br>
+            <input type="checkbox" id="firstDegreeBurns50" name="firstDegreeBurns50">
+            <label for="firstDegreeBurns50">First degree burns (50% probability)</label><br>
+            <input type="checkbox" id="noBurn100" name="noBurn100">
+            <label for="noBurn100">Minimum radius for 100% probability of no burn</label><br>
+            <input type="checkbox" id="dryWoodBurns" name="dryWoodBurns">
+            <label for="dryWoodBurns">Dry wood usually burns (35 cal/cm²)</label><br>
+
+            <h3>Other effects:</h3>
+            <input type="checkbox" id="fireball" name="fireball">
+            <label for="fireball">Fireball</label><br>
+            <input type="checkbox" id="crater" name="crater">
+            <label for="crater">Crater</label><br>
+            <input type="checkbox" id="fallout" name="fallout">
+            <label for="fallout">Fallout</label><br>
+            <input type="checkbox" id="EMP" name="EMP">
+            <label for="EMP">EMP</label><br>
+        </div>
+
+
+        <input type="submit" value="Launch">
     </form>
+    {% if message %}
+            <p id="error-message" style="position: fixed; font-size: 3em; color: red; z-index: 9999;">{{ message }}</p>
+            <script>
+                // Make the error message disappear after 2 seconds
+                setTimeout(function() {
+                    document.getElementById('error-message').style.display = 'none';
+                }, 2000);
+            </script>
+    {% endif %}
     <iframe src="{{ url_for('static', filename='map.html') }}" style="border: none; width: 100%; height: 90vh; margin-top: 50px;"></iframe>
-
-
-
 </body>
+
+
 </html>
