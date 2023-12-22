@@ -17,8 +17,6 @@ fallout_contours = []
 fallout_points = {}
 fallout_points[det_index] = []
 
-fallout_drag_listener = None
-marker_drag_listener = None
 fallout_debug = False
 
 fallout_current = None
@@ -35,10 +33,9 @@ sqkm2sqmi = 0.386102
 # defaults
 rad_doses = [1, 10, 100, 1000]
 angle = 225
-steps = 15
+steps = 5
 
-# used for color mixing
-background_color = "e0e0e0"
+
 kt = 0
 fission_fraction = 0
 fallout_info_div_id = 'some_id'  # some identifier
@@ -407,7 +404,7 @@ class Fallout:
 
             for i in range(len(rad_doses)):
                 rad = rad_doses[i] * (1 / fission_fraction) # fission fraction decreases the overall radiation linearly.
-                print(f"Current rad dose: {rad}")  
+                print(f"Current rad dose: {rad}")  #this needs to be updated
 
                 # create the dose_data object -- all input distances in feet, all output in miles
                 d = {
@@ -430,8 +427,7 @@ class Fallout:
                     draw_cloud = True if rad <= p['i7'] else False
                     draw_stem = True if rad <= p['i2'] else False
 
-                    # estimate of the area enclosed -- sq mi
-                    print(f"d['draw_stem']: {d['draw_stem']}")
+            
 
 
                     # Recalculate the values that depend on 'rad'
@@ -907,46 +903,6 @@ class Fallout:
         return pow(10, n)
 
 fo = Fallout()
-
-
-
-
-wind_speed, wind_direction = fo.get_wind_data(52.52, 13.41)
-
-
-
-# Prompt the user for the necessary parameters
-kt = float(input("Enter the yield of the explosion in kilotons: "))
-fission_fraction = float(input("Enter the fraction of the yield that is due to fission (0-1): "))
-hob = float(input("Enter the height of the burst in feet: "))
-
-
-dose_data = fo.SFSS_fallout(kt, rad_doses, fission_fraction, wind_speed)
-
-# Get the first dose_data object
-f = dose_data[0]
-
-# Call SFSS_fallout_points with f
-points = fo.SFSS_fallout_points(f, angle, steps)
-
-# Unzip the list of points into X and Y coordinates
-x_coords, y_coords = zip(*points)
-
-# Convert y_coords to a numpy array for easier manipulation
-y_coords_np = np.array(y_coords)
-
-# Create a line plot to join the points
-plt.plot(x_coords, y_coords, color='blue')
-
-# Create a scatter plot, with color determined by y-coordinate
-plt.scatter(x_coords, y_coords, c=y_coords_np, cmap='viridis')
-
-# Add a colorbar to the plot to show how the colors correspond to y-values
-plt.colorbar(label='y-coordinate')
-
-# Show the plot
-plt.show()
-
 
 rad_doses = [ 1 ]
 
