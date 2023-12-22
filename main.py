@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import copy
 from nucleareffects import NukeEffects
 
+from fallout import Fallout
+import numpy as np
 app = Flask(__name__, template_folder='C:\\Users\\Danie\\OneDrive\\Desktop\\Sublime Coding\\Nuclear\\templates', static_folder='C:\\Users\\Danie\\OneDrive\\Desktop\\Sublime Coding\\Nuclear\\static')
 
 geolocator = Nominatim(user_agent="thesimltor")
@@ -18,6 +20,7 @@ geolocator = Nominatim(user_agent="thesimltor")
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
+        print(request.form)
         message = None
         i = 0
 
@@ -25,6 +28,7 @@ def home():
         default_speeds = []
         default_coordinates = []
         selected_missile = None
+        coordinates = []
 
         # Use geopy to get coordinates for two cities
         geolocator = Nominatim(user_agent="geoapiExercise")
@@ -41,15 +45,19 @@ def home():
         m = folium.Map(location=[0, 0], zoom_start=2)
 
 
-
         missile_number = request.form.get('missile')
-         
+        new_payload = request.form.get('new-payload')  # Get the new payload from the form
+        print(new_payload)
+
         if missile_number is not None:
             missile_number = int(missile_number)
             selected_missile = copy.deepcopy(missiles[missile_number - 1])  # Create a copy of the selected missile
-            new_payload = request.form.get('new-payload')  # Get the new payload from the form
-            if new_payload is not None:
-                selected_missile.payload = new_payload  # Update the payload of the copy
+        elif new_payload is not None:
+        	missile_number = int(0)
+        	selected_missile = copy.deepcopy(missiles[0])
+        	selected_missile.payload = new_payload
+        	print(selected_missile.payload)
+
 
         if selected_missile:
             time = selected_missile.calculate_flight_time(selected_missile.max_speed, location1.latitude, location1.longitude, location2.latitude, location2.longitude)
@@ -71,12 +79,13 @@ def home():
 
                 # Define the number of increments based on the flight time
                 num_increments = flight_time_seconds
+                print(num_increments)
                 lat_increment = (location2.latitude - location1.latitude) / num_increments
+                print(num_increments)
                 lon_increment = (location2.longitude - location1.longitude) / num_increments
 
 
-                # Generate the coordinates for each increment
-                coordinates = []
+
                 counter1 = 0  # Initialize the counter
                 for i in range(num_increments + 1):
                     coord = [location1.longitude + i * lon_increment, location1.latitude + i * lat_increment]
@@ -97,7 +106,19 @@ def home():
 
 
 
-        # Check if the checkbox for '3000psi' is ticked
+        height = request.form.get('height')
+        
+
+        # Check if the 'surface' checkbox is ticked
+        is_surface = 'surface' in request.form
+        print(f"Is surface: {is_surface}")
+
+        # Set 'is_airburst' to the opposite of 'is_surface'
+        is_airburst = not is_surface
+        print(f"Is airburst: {is_airburst}")
+
+
+
         is_3000psi_ticked = '3000psi' in request.form
 
 
@@ -107,13 +128,13 @@ def home():
             
             # Assuming you have the yield of the explosion and the height of burst
             yield_ = 300
-            hob = 0
+            hob = height if height is not None else 0
             
             # Create an instance of NukeEffects
             nukeEffects = NukeEffects()
             
             # Calculate the distance affected by 3000psi
-            distance = nukeEffects.psi_distance(selected_missile.payload, 1, True) # assuming it's an airburst
+            distance = nukeEffects.psi_distance(selected_missile.payload, 1, is_airburst)  
 
             
             # Convert the distance to meters
@@ -142,11 +163,8 @@ def home():
         else:
             print("The '3000psi' checkbox is not ticked.")
 
-
-        # Check if the checkbox for '100rem' is ticked
         is_100rem_ticked = '100rem' in request.form
 
-        # Print out whether the checkbox is ticked
         if is_100rem_ticked:
             print("The '100rem' checkbox is ticked.")
             
@@ -178,6 +196,91 @@ def home():
             ).add_to(m)
         else:
             print("The '100rem' checkbox is not ticked.")
+
+
+
+
+
+
+
+        
+
+        def generate_oval(focus, major_axis, minor_axis, angle):
+            """
+            Generate points for an oval (teardrop shape).
+
+            Parameters:
+            - focus: The [latitude, longitude] of one of the foci of the oval.
+            - major_axis: this is given by the code max_downwind_distance_meters
+            - minor_axis: this is given by the code max_width_meters
+            - angle: This is given by the code wind_direction
+
+            Returns:
+            - points: A list of [latitude, longitude] points that make up the oval.
+            """
+            # Convert degrees to radians
+            angle = np.deg2rad(angle)
+
+            # Calculate the coordinates of the center of the oval
+            center = [focus[0] + major_axis/2 * np.cos(angle), focus[1] + major_axis/2 * np.sin(angle)]
+
+            # Generate t values
+            t = np.linspace(0, 2*np.pi, 100)
+
+            # Generate the oval points
+            x = center[0] + major_axis/2 * np.sin(t) * np.cos(angle) - minor_axis/2 * np.cos(t) * np.sin(angle)
+            y = center[1] + major_axis/2 * np.sin(t) * np.sin(angle) + minor_axis/2 * np.cos(t) * np.cos(angle)
+
+            # Combine x and y into a list of points
+            points = list(zip(x, y))
+
+            return points
+
+
+
+        is_fallouts_ticked = 'fallouts' in request.form
+
+
+        print(request.form)
+        if is_fallouts_ticked:
+        	print("The 'fallout' checkbox is ticked.")
+
+
+        	fo = Fallout()
+
+        	wind_speed, wind_direction = fo.get_wind_data(location2.latitude, location2.longitude)
+
+        	fission_fraction = 0.9 
+
+        	rad_doses= [1] 
+
+
+        	# Calculate the fallout parameters
+        	fallout_params_list = fo.SFSS_fallout(selected_missile.payload, rad_doses, fission_fraction, wind_speed)
+
+        	# Get the first (and only) item in the list
+        	fallout_params = fallout_params_list[0]
+
+        	# Now you can access 'downwind_cloud_distance' and 'max_cloud_width'
+        	max_downwind_distance_meters = fallout_params['downwind_cloud_distance'] * 0.0160934 
+        	max_width_meters = fallout_params['max_cloud_width']  * 0.0160934
+
+
+        	print(f"max_downwind_distance_meters: {max_downwind_distance_meters}")
+        	print(f"max_width_meters: {max_width_meters}")
+        	print(f"location2.latitude: {location2.latitude}")
+        	print(f"location2.longitude: {location2.longitude}")
+        	print(f"wind_direction: {wind_direction}")
+
+        	points = generate_oval(focus=[location2.latitude, location2.longitude], major_axis=max_downwind_distance_meters, minor_axis=max_width_meters, angle=wind_direction)
+
+        	# Add the oval to the map
+        	folium.vector_layers.Polygon(locations=points, color="yellow", fill=True).add_to(m)
+
+        else:
+        	print("not ticked")
+     
+
 
 
         # Add a marker for the start location
@@ -251,7 +354,6 @@ def home():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
 
 
 
